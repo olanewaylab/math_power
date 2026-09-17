@@ -1,0 +1,300 @@
+<title>Единичната окръжност</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&family=Source+Sans+3:wght@400;600&family=IBM+Plex+Mono:wght@400;600&display=swap">
+<style>
+  :root{
+    --paper:#F1F4F8; --surface:#FFFFFF; --ink:#141B2D; --muted:#59657A;
+    --line:#D3DAE4; --line-soft:#E4E9F0;
+    --cos:#B45309; --sin:#1D4ED8; --tan:#9D174D; --ray:#0F766E;
+    --ok:#15803D; --no:#B91C1C;
+    --serif:"Source Serif 4",Georgia,serif;
+    --sans:"Source Sans 3",system-ui,sans-serif;
+    --mono:"IBM Plex Mono",ui-monospace,monospace;
+  }
+  @media (prefers-color-scheme:dark){
+    :root:not([data-theme="light"]){
+      --paper:#0E131E; --surface:#161D2C; --ink:#E7ECF5; --muted:#98A5BA;
+      --line:#2A3348; --line-soft:#212940;
+      --cos:#E8A25C; --sin:#7FA8FF; --tan:#F087B4; --ray:#4FD1C5;
+      --ok:#4ADE80; --no:#F87171;
+    }
+  }
+  :root[data-theme="dark"]{
+    --paper:#0E131E; --surface:#161D2C; --ink:#E7ECF5; --muted:#98A5BA;
+    --line:#2A3348; --line-soft:#212940;
+    --cos:#E8A25C; --sin:#7FA8FF; --tan:#F087B4; --ray:#4FD1C5;
+    --ok:#4ADE80; --no:#F87171;
+  }
+  body{background:var(--paper);color:var(--ink);font-family:var(--sans);line-height:1.55;}
+  .wrap{max-width:1040px;margin:0 auto;padding-inline:16px;padding-block:32px 56px;}
+  header{border-bottom:1px solid var(--line);padding-bottom:20px;margin-bottom:28px;}
+  .eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--muted);}
+  h1{font-family:var(--serif);font-size:clamp(28px,5vw,42px);font-weight:600;margin:6px 0 8px;text-wrap:balance;}
+  .lead{color:var(--muted);max-width:62ch;margin:0;}
+  .stage{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:24px;align-items:start;}
+  @media (max-width:760px){.stage{grid-template-columns:1fr;}}
+  .panel{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:18px;}
+  svg.circle{width:100%;height:auto;max-width:100%;touch-action:none;cursor:grab;display:block;}
+  svg.circle:active{cursor:grabbing;}
+  svg.circle:focus-visible{outline:2px solid var(--ray);outline-offset:4px;border-radius:6px;}
+  .hint{font-size:13px;color:var(--muted);margin:10px 2px 0;display:flex;gap:8px;align-items:baseline;}
+  .readout{display:grid;gap:10px;}
+  .row{display:grid;grid-template-columns:82px 1fr;align-items:baseline;gap:12px;
+       padding:9px 12px;border-radius:7px;background:var(--paper);border:1px solid var(--line-soft);}
+  .row .k{font-family:var(--mono);font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);}
+  .row .v{font-family:var(--mono);font-size:19px;font-weight:600;font-variant-numeric:tabular-nums;}
+  .row.angle .v{color:var(--ray);} .row.cos .v{color:var(--cos);}
+  .row.sin .v{color:var(--sin);} .row.tan .v{color:var(--tan);}
+  .exact{font-size:12px;color:var(--muted);font-family:var(--sans);margin-left:8px;font-weight:400;}
+  h2{font-family:var(--serif);font-size:22px;font-weight:600;margin:40px 0 4px;}
+  .sub{color:var(--muted);font-size:14px;margin:0 0 16px;max-width:62ch;}
+  .quadrants{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;}
+  @media (max-width:640px){.quadrants{grid-template-columns:repeat(2,1fr);}}
+  .q{background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:12px;}
+  .q h3{font-family:var(--mono);font-size:13px;margin:0 0 8px;letter-spacing:.06em;color:var(--muted);font-weight:600;}
+  .q ul{list-style:none;margin:0;padding:0;font-family:var(--mono);font-size:14px;display:grid;gap:3px;}
+  .q .p{color:var(--ok);} .q .m{color:var(--no);}
+  .tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:8px;background:var(--surface);}
+  table{border-collapse:collapse;width:100%;font-family:var(--mono);font-size:14px;min-width:520px;}
+  th,td{padding:9px 12px;text-align:left;border-bottom:1px solid var(--line-soft);white-space:nowrap;}
+  th{font-size:11px;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);font-weight:600;}
+  tbody tr:last-child td{border-bottom:none;}
+  tbody tr{cursor:pointer;}
+  tbody tr:hover{background:var(--paper);}
+  tbody tr[aria-current="true"]{background:var(--paper);box-shadow:inset 3px 0 0 var(--ray);}
+  td.c{color:var(--cos);} td.s{color:var(--sin);} td.t{color:var(--tan);}
+  .quiz{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:20px;}
+  .qtext{font-family:var(--serif);font-size:26px;margin:0 0 16px;}
+  .opts{display:flex;flex-wrap:wrap;gap:10px;}
+  button{font-family:var(--mono);font-size:16px;padding:10px 18px;border-radius:7px;
+         border:1px solid var(--line);background:var(--paper);color:var(--ink);cursor:pointer;}
+  button:hover{border-color:var(--ray);}
+  button:focus-visible{outline:2px solid var(--ray);outline-offset:2px;}
+  button[data-state="ok"]{border-color:var(--ok);color:var(--ok);}
+  button[data-state="no"]{border-color:var(--no);color:var(--no);}
+  .feedback{margin-top:14px;font-size:15px;min-height:1.6em;}
+  .feedback b{font-family:var(--mono);}
+  .score{font-family:var(--mono);font-size:13px;color:var(--muted);}
+  figure{margin:0;}
+  figcaption{font-size:13px;color:var(--muted);margin-top:10px;}
+  .note{border-left:3px solid var(--ray);padding:4px 0 4px 14px;color:var(--muted);font-size:14px;max-width:64ch;}
+  @media (prefers-reduced-motion:no-preference){.pt{transition:none;}}
+</style>
+
+<div class="wrap">
+<header>
+  <div class="eyebrow">Тригонометрия · T1</div>
+  <h1>Единичната окръжност</h1>
+  <p class="lead">Едно чертеже, от което се четат синусът, косинусът, тангенсът, знаците по квадранти и всички таблични стойности. Ако се научи само това, тригонометрията в теста престава да е познаване наизуст.</p>
+</header>
+
+<div class="stage">
+  <figure class="panel">
+    <svg class="circle" viewBox="0 0 420 400" role="img" tabindex="0"
+         aria-label="Единична окръжност с подвижна точка: косинусът е хоризонталната проекция, синусът — вертикалната."
+         id="fig">
+      <defs>
+        <marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+          <path d="M0,0 L10,5 L0,10 z" fill="currentColor"/>
+        </marker>
+      </defs>
+      <g stroke="var(--line-soft)" stroke-width="1">
+        <line x1="60" y1="200" x2="360" y2="200"/>
+        <line x1="210" y1="50" x2="210" y2="350"/>
+      </g>
+      <g fill="var(--muted)" font-family="IBM Plex Mono, monospace" font-size="11">
+        <text x="364" y="204">x</text>
+        <text x="204" y="46">y</text>
+        <text x="352" y="216" text-anchor="middle">1</text>
+        <text x="68" y="216" text-anchor="middle">−1</text>
+        <text x="222" y="56">1</text>
+        <text x="220" y="348">−1</text>
+      </g>
+      <g fill="var(--muted)" font-family="IBM Plex Mono, monospace" font-size="12" opacity=".5">
+        <text x="310" y="110">I</text><text x="106" y="110">II</text>
+        <text x="104" y="300">III</text><text x="308" y="300">IV</text>
+      </g>
+      <circle cx="210" cy="200" r="140" fill="none" stroke="var(--line)" stroke-width="1.5"/>
+      <path id="arc" d="" fill="none" stroke="var(--ray)" stroke-width="2" opacity=".55"/>
+      <line id="lcos" x1="210" y1="200" x2="350" y2="200" stroke="var(--cos)" stroke-width="3.5" stroke-linecap="round"/>
+      <line id="lsin" x1="350" y1="200" x2="350" y2="200" stroke="var(--sin)" stroke-width="3.5" stroke-linecap="round"/>
+      <line id="lray" x1="210" y1="200" x2="350" y2="200" stroke="var(--ray)" stroke-width="2"/>
+      <circle id="pt" class="pt" cx="350" cy="200" r="7" fill="var(--ray)"/>
+      <text id="tlab" x="240" y="192" fill="var(--ray)" font-family="IBM Plex Mono, monospace" font-size="12">0°</text>
+      <text id="clab" x="280" y="220" fill="var(--cos)" font-family="IBM Plex Mono, monospace" font-size="12" text-anchor="middle">cos</text>
+      <text id="slab" x="362" y="200" fill="var(--sin)" font-family="IBM Plex Mono, monospace" font-size="12">sin</text>
+    </svg>
+    <figcaption>Хвани точката и я движи. Оранжевата отсечка е <b>cos α</b> (хоризонтална проекция), синята е <b>sin α</b> (вертикална). Стрелките на клавиатурата местят с 15°, с <span style="font-family:var(--mono)">Shift</span> — с 1°.</figcaption>
+  </figure>
+
+  <div class="panel">
+    <div class="readout">
+      <div class="row angle"><span class="k">ъгъл</span><span class="v" id="vang">0°</span></div>
+      <div class="row angle"><span class="k">радиани</span><span class="v" id="vrad">0</span></div>
+      <div class="row cos"><span class="k">cos α</span><span class="v" id="vcos">1</span></div>
+      <div class="row sin"><span class="k">sin α</span><span class="v" id="vsin">0</span></div>
+      <div class="row tan"><span class="k">tg α</span><span class="v" id="vtan">0</span></div>
+    </div>
+    <p class="hint"><span id="snap">на таблична стойност</span></p>
+    <p class="note" style="margin-top:16px">Координатите на точката <b>са</b> (cos α; sin α). Оттам следва и основното тъждество: <span style="font-family:var(--mono)">sin²α + cos²α = 1</span> е просто Питагор за радиуса.</p>
+  </div>
+</div>
+
+<h2>Знаци по квадранти</h2>
+<p class="sub">Не се учи наизуст — чете се от чертежа: знакът на cos е знакът на <i>x</i>, знакът на sin е знакът на <i>y</i>. Най-честата грешка в теста е загубен знак във втори и трети квадрант.</p>
+<div class="quadrants">
+  <div class="q"><h3>I · 0°–90°</h3><ul><li class="p">sin +</li><li class="p">cos +</li><li class="p">tg +</li></ul></div>
+  <div class="q"><h3>II · 90°–180°</h3><ul><li class="p">sin +</li><li class="m">cos −</li><li class="m">tg −</li></ul></div>
+  <div class="q"><h3>III · 180°–270°</h3><ul><li class="m">sin −</li><li class="m">cos −</li><li class="p">tg +</li></ul></div>
+  <div class="q"><h3>IV · 270°–360°</h3><ul><li class="m">sin −</li><li class="p">cos +</li><li class="m">tg −</li></ul></div>
+</div>
+
+<h2>Таблични стойности</h2>
+<p class="sub">Кликни върху ред, за да видиш ъгъла на чертежа.</p>
+<div class="tablewrap">
+  <table id="tbl">
+    <thead><tr><th>α</th><th>радиани</th><th>cos α</th><th>sin α</th><th>tg α</th></tr></thead>
+    <tbody></tbody>
+  </table>
+</div>
+
+<h2>Провери се</h2>
+<p class="sub">Десет въпроса от табличните стойности. Без чертежа — после сравни с него.</p>
+<div class="quiz">
+  <p class="qtext" id="qtext">—</p>
+  <div class="opts" id="opts"></div>
+  <div class="feedback" id="fb"></div>
+  <div class="score" id="score">0 от 0</div>
+</div>
+</div>
+
+<script>
+(function(){
+  var SP=[
+    {d:0,r:"0",c:"1",s:"0",t:"0"},
+    {d:30,r:"π/6",c:"√3/2",s:"1/2",t:"√3/3"},
+    {d:45,r:"π/4",c:"√2/2",s:"√2/2",t:"1"},
+    {d:60,r:"π/3",c:"1/2",s:"√3/2",t:"√3"},
+    {d:90,r:"π/2",c:"0",s:"1",t:"не съществува"},
+    {d:120,r:"2π/3",c:"−1/2",s:"√3/2",t:"−√3"},
+    {d:135,r:"3π/4",c:"−√2/2",s:"√2/2",t:"−1"},
+    {d:150,r:"5π/6",c:"−√3/2",s:"1/2",t:"−√3/3"},
+    {d:180,r:"π",c:"−1",s:"0",t:"0"},
+    {d:210,r:"7π/6",c:"−√3/2",s:"−1/2",t:"√3/3"},
+    {d:225,r:"5π/4",c:"−√2/2",s:"−√2/2",t:"1"},
+    {d:240,r:"4π/3",c:"−1/2",s:"−√3/2",t:"√3"},
+    {d:270,r:"3π/2",c:"0",s:"−1",t:"не съществува"},
+    {d:300,r:"5π/3",c:"1/2",s:"−√3/2",t:"−√3"},
+    {d:315,r:"7π/4",c:"√2/2",s:"−√2/2",t:"−1"},
+    {d:330,r:"11π/6",c:"√3/2",s:"−1/2",t:"−√3/3"}
+  ];
+  var CX=210,CY=200,R=140,deg=0;
+  var $=function(id){return document.getElementById(id);};
+  var fig=$("fig");
+
+  function fmt(n){ if(Math.abs(n)<1e-9) n=0; return (n<0?"−":"")+Math.abs(n).toFixed(3); }
+  function special(d){ for(var i=0;i<SP.length;i++){ if(SP[i].d===Math.round(d)) return SP[i]; } return null; }
+
+  function draw(){
+    var a=deg*Math.PI/180, px=CX+R*Math.cos(a), py=CY-R*Math.sin(a);
+    $("lray").setAttribute("x2",px); $("lray").setAttribute("y2",py);
+    $("pt").setAttribute("cx",px);   $("pt").setAttribute("cy",py);
+    $("lcos").setAttribute("x2",px);
+    $("lsin").setAttribute("x1",px); $("lsin").setAttribute("y1",CY);
+    $("lsin").setAttribute("x2",px); $("lsin").setAttribute("y2",py);
+    var ar=40, la=(deg>180)?1:0;
+    $("arc").setAttribute("d","M "+(CX+ar)+" "+CY+" A "+ar+" "+ar+" 0 "+la+" 0 "+
+      (CX+ar*Math.cos(a))+" "+(CY-ar*Math.sin(a)));
+    var ha=(deg/2)*Math.PI/180;
+    $("tlab").setAttribute("x",CX+58*Math.cos(ha)-8); $("tlab").setAttribute("y",CY-58*Math.sin(ha)+4);
+    $("tlab").textContent=Math.round(deg)+"°";
+    $("clab").setAttribute("x",(CX+px)/2); $("clab").setAttribute("y",CY+(py>CY?-8:18));
+    $("slab").setAttribute("x",px+(px<CX?-30:10)); $("slab").setAttribute("y",(CY+py)/2);
+
+    var sp=special(deg), c=Math.cos(a), s=Math.sin(a);
+    $("vang").textContent=Math.round(deg*10)/10+"°";
+    if(sp){
+      $("vrad").textContent=sp.r;
+      $("vcos").innerHTML=sp.c+'<span class="exact">≈ '+fmt(c)+'</span>';
+      $("vsin").innerHTML=sp.s+'<span class="exact">≈ '+fmt(s)+'</span>';
+      $("vtan").innerHTML=sp.t+(sp.t==="не съществува"?"":'<span class="exact">≈ '+fmt(Math.tan(a))+'</span>');
+      $("snap").textContent="✓ таблична стойност — запомни точния вид, не десетичния";
+    }else{
+      $("vrad").textContent=fmt(deg*Math.PI/180)+" rad";
+      $("vcos").textContent=fmt(c); $("vsin").textContent=fmt(s);
+      $("vtan").textContent=Math.abs(c)<1e-9?"не съществува":fmt(Math.tan(a));
+      $("snap").textContent="между таблични стойности — приближи се до 0°, 30°, 45°, 60°…";
+    }
+    var rows=$("tbl").tBodies[0].rows;
+    for(var i=0;i<rows.length;i++){ rows[i].setAttribute("aria-current", sp&&SP[i].d===sp.d ? "true":"false"); }
+  }
+
+  function setDeg(d,snap){
+    d=((d%360)+360)%360;
+    if(snap){ for(var i=0;i<SP.length;i++){ var dd=Math.abs(((d-SP[i].d+540)%360)-180); if(dd<5){ d=SP[i].d; break; } } }
+    deg=d; draw();
+  }
+
+  function fromEvent(e){
+    var b=fig.getBoundingClientRect(), vb=420, sc=b.width/vb;
+    var x=(e.clientX-b.left)/sc, y=(e.clientY-b.top)/sc;
+    setDeg(Math.atan2(CY-y, x-CX)*180/Math.PI, true);
+  }
+  var dragging=false;
+  fig.addEventListener("pointerdown",function(e){dragging=true;fig.setPointerCapture(e.pointerId);fromEvent(e);e.preventDefault();});
+  fig.addEventListener("pointermove",function(e){ if(dragging) fromEvent(e); });
+  fig.addEventListener("pointerup",function(){dragging=false;});
+  fig.addEventListener("pointercancel",function(){dragging=false;});
+  fig.addEventListener("keydown",function(e){
+    var step=e.shiftKey?1:15;
+    if(e.key==="ArrowRight"||e.key==="ArrowUp"){ setDeg(deg+step,false); e.preventDefault(); }
+    if(e.key==="ArrowLeft"||e.key==="ArrowDown"){ setDeg(deg-step,false); e.preventDefault(); }
+  });
+
+  var tb=$("tbl").tBodies[0];
+  SP.forEach(function(p){
+    var tr=tb.insertRow();
+    tr.innerHTML="<td>"+p.d+"°</td><td>"+p.r+"</td><td class='c'>"+p.c+"</td><td class='s'>"+p.s+"</td><td class='t'>"+p.t+"</td>";
+    tr.addEventListener("click",function(){ setDeg(p.d,false); fig.scrollIntoView({block:"center",behavior:"smooth"}); });
+  });
+
+  var right=0,total=0,cur=null;
+  function ask(){
+    var p=SP[Math.floor(Math.random()*SP.length)];
+    var fn=["c","s"][Math.floor(Math.random()*2)];
+    var name=fn==="c"?"cos":"sin";
+    var correct=p[fn];
+    var pool=[];
+    SP.forEach(function(q){ ["c","s"].forEach(function(k){ if(pool.indexOf(q[k])<0 && q[k]!==correct) pool.push(q[k]); }); });
+    var opts=[correct];
+    while(opts.length<4 && pool.length){ opts.push(pool.splice(Math.floor(Math.random()*pool.length),1)[0]); }
+    opts.sort(function(){return Math.random()-0.5;});
+    cur={a:correct,d:p.d,fn:name};
+    $("qtext").textContent=name+" "+p.d+"° = ?";
+    var box=$("opts"); box.innerHTML="";
+    opts.forEach(function(o){
+      var b=document.createElement("button"); b.type="button"; b.textContent=o;
+      b.addEventListener("click",function(){ answer(b,o); });
+      box.appendChild(b);
+    });
+    $("fb").textContent="";
+  }
+  function answer(btn,val){
+    if(btn.disabled) return;
+    total++;
+    var ok=(val===cur.a);
+    if(ok) right++;
+    Array.prototype.forEach.call($("opts").children,function(b){
+      b.disabled=true;
+      if(b.textContent===cur.a) b.dataset.state="ok";
+      else if(b===btn) b.dataset.state="no";
+    });
+    $("fb").innerHTML=(ok?"Вярно. ":"Не. Вярното е <b>"+cur.a+"</b>. ")+
+      "Виж "+cur.d+"° на чертежа — "+(cur.fn==="cos"?"хоризонталната":"вертикалната")+" проекция.";
+    $("score").textContent=right+" от "+total;
+    setDeg(cur.d,false);
+    setTimeout(ask,1800);
+  }
+
+  setDeg(30,false); ask();
+})();
+</script>
